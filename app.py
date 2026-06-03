@@ -15,18 +15,21 @@ SCOPE = [
     "https://www.googleapis.com/auth/drive.readonly"
 ]
 
-CREDS_FILE = "credenciais.json"
-
-SPREADSHEET_ID = "1pnMCphkZG1PtLGcqm5BaefLLdX-ibARmuN-aNc0grTE"
-SHEET_NAME = "Fluxo de caixa"
+SPREADSHEET_ID = st.secrets["SPREADSHEET_ID"]
+SHEET_NAME = st.secrets["SHEET_NAME"]
 
 
 @st.cache_data(ttl=300)
 def carregar_dados():
-    creds = Credentials.from_service_account_file(CREDS_FILE, scopes=SCOPE)
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"],
+        scopes=SCOPE
+    )
+
     client = gspread.authorize(creds)
     sheet = client.open_by_key(SPREADSHEET_ID).worksheet(SHEET_NAME)
     dados = sheet.get_all_records()
+
     return pd.DataFrame(dados)
 
 
