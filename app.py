@@ -95,7 +95,7 @@ st.sidebar.header("Filtros")
 tipo_periodo = st.sidebar.radio(
     "Período",
     ["Todas as datas", "Mês", "Período personalizado"],
-    index=0
+    index=1
 )
 
 if tipo_periodo == "Todas as datas":
@@ -110,9 +110,18 @@ elif tipo_periodo == "Mês":
 
     opcoes_meses = meses_disponiveis["MÊS_REF"].tolist()
 
+    mes_atual = pd.Timestamp.today().strftime("%m/%Y")
+
+    indice_mes_atual = (
+        opcoes_meses.index(mes_atual)
+        if mes_atual in opcoes_meses
+        else 0
+    )
+    
     mes_selecionado = st.sidebar.selectbox(
         "Selecione o mês",
-        opcoes_meses
+        opcoes_meses,
+        index=indice_mes_atual
     )
 
     df_filtrado = df[df["MÊS_REF"] == mes_selecionado]
