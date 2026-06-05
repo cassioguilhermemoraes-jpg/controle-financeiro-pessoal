@@ -80,21 +80,51 @@ df = preparar_dados(df_original)
 
 st.sidebar.header("Filtros")
 
-data_min = df["DATA"].min().date()
-data_max = df["DATA"].max().date()
+tipo_periodo = st.sidebar.radio(
+    "Período",
+    ["Todas as datas", "Mês", "Período personalizado"],
+    index=0
+)
 
-usar_periodo = st.sidebar.checkbox("Filtrar por período", value=False)
+if tipo_periodo == "Todas as datas":
+    df_filtrado = df.copy()
 
-if usar_periodo:
-    data_inicio = st.sidebar.date_input("Data inicial", data_min, format="DD/MM/YYYY")
-    data_fim = st.sidebar.date_input("Data final", data_max, format="DD/MM/YYYY")
+elif tipo_periodo == "Mês":
+    meses_disponiveis = (
+        df[["MÊS_REF", "ANO_MES"]]
+        .drop_duplicates()
+        .sort_values("ANO_MES", ascending=False)
+    )
+
+    opcoes_meses = meses_disponiveis["MÊS_REF"].tolist()
+
+    mes_selecionado = st.sidebar.selectbox(
+        "Selecione o mês",
+        opcoes_meses
+    )
+
+    df_filtrado = df[df["MÊS_REF"] == mes_selecionado]
+
+else:
+    data_min = df["DATA"].min().date()
+    data_max = df["DATA"].max().date()
+
+    data_inicio = st.sidebar.date_input(
+        "Data inicial",
+        data_min,
+        format="DD/MM/YYYY"
+    )
+
+    data_fim = st.sidebar.date_input(
+        "Data final",
+        data_max,
+        format="DD/MM/YYYY"
+    )
 
     df_filtrado = df[
         (df["DATA"].dt.date >= data_inicio) &
         (df["DATA"].dt.date <= data_fim)
     ]
-else:
-    df_filtrado = df.copy()
 
 centros = sorted(df_filtrado["CENTRO DE CUSTO"].dropna().unique().tolist())
 
