@@ -78,6 +78,18 @@ except Exception as e:
 
 df = preparar_dados(df_original)
 
+# Saldo atual geral apenas do centro de custo Necessidades Básicas
+df_necessidades_basicas = df[
+    df["CENTRO DE CUSTO"].astype(str).str.strip().str.lower() == "necessidades básicas"
+]
+
+saldo_atual = (
+    df_necessidades_basicas["VALOR ENTRADA NUM"].sum()
+    - df_necessidades_basicas["VALOR SAÍDA NUM"].sum()
+)
+
+cor_saldo_atual = "#16a34a" if saldo_atual >= 0 else "#dc2626"
+
 st.sidebar.header("Filtros")
 
 tipo_periodo = st.sidebar.radio(
@@ -151,7 +163,7 @@ total_entrada = df_filtrado["VALOR ENTRADA NUM"].sum()
 total_saida = df_filtrado["VALOR SAÍDA NUM"].sum()
 saldo = total_entrada - total_saida
 
-st.markdown("### Resumo do período")
+st.markdown("### Resumo financeiro")
 
 cor_saldo = "#16a34a" if saldo >= 0 else "#dc2626"
 
@@ -207,13 +219,24 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-col1, col2, col3 = st.columns(3)
+col0, col1, col2, col3 = st.columns(4)
+
+with col0:
+    st.markdown(
+        f"""
+        <div class="card-resumo">
+            <div class="card-titulo">Saldo atual - Necessidades Básicas</div>
+            <div class="card-valor" style="color:{cor_saldo_atual};">{formatar_real(saldo_atual)}</div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 with col1:
     st.markdown(
         f"""
         <div class="card-resumo">
-            <div class="card-titulo">Entradas</div>
+            <div class="card-titulo">Entradas do filtro</div>
             <div class="card-valor entrada">{formatar_real(total_entrada)}</div>
         </div>
         """,
@@ -224,7 +247,7 @@ with col2:
     st.markdown(
         f"""
         <div class="card-resumo">
-            <div class="card-titulo">Saídas</div>
+            <div class="card-titulo">Saídas do filtro</div>
             <div class="card-valor saida">{formatar_real(total_saida)}</div>
         </div>
         """,
@@ -235,7 +258,7 @@ with col3:
     st.markdown(
         f"""
         <div class="card-resumo">
-            <div class="card-titulo">Saldo</div>
+            <div class="card-titulo">Saldo do filtro</div>
             <div class="card-valor saldo">{formatar_real(saldo)}</div>
         </div>
         """,
