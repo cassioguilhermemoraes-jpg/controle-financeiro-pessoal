@@ -67,6 +67,16 @@ def preparar_dados(df):
     return df
 
 
+
+try:
+    df_original = carregar_dados()
+except Exception as e:
+    st.error("Erro ao carregar dados da planilha.")
+    st.exception(e)
+    st.stop()
+
+df = preparar_dados(df_original)
+
 st.title("💰 Controle Financeiro Pessoal")
 
 meses_disponiveis = (
@@ -90,15 +100,6 @@ mes_selecionado = st.selectbox(
     opcoes_meses,
     index=indice_mes_atual
 )
-
-try:
-    df_original = carregar_dados()
-except Exception as e:
-    st.error("Erro ao carregar dados da planilha.")
-    st.exception(e)
-    st.stop()
-
-df = preparar_dados(df_original)
 
 # Saldo atual geral apenas do centro de custo Necessidades Básicas
 df_necessidades_basicas = df[
@@ -126,17 +127,6 @@ if tipo_periodo == "Todas as datas":
 elif tipo_periodo == "Mês":
     df_filtrado = df[df["MÊS_REF"] == mes_selecionado]
 
-    opcoes_meses = meses_disponiveis["MÊS_REF"].tolist()
-
-    mes_atual = pd.Timestamp.today().strftime("%m/%Y")
-
-    indice_mes_atual = (
-        opcoes_meses.index(mes_atual)
-        if mes_atual in opcoes_meses
-        else 0
-    )
-
-    df_filtrado = df[df["MÊS_REF"] == mes_selecionado]
 
 else:
     data_min = df["DATA"].min().date()
