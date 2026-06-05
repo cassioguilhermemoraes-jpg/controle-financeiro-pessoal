@@ -18,8 +18,6 @@ SCOPE = [
 SPREADSHEET_ID = st.secrets["SPREADSHEET_ID"]
 SHEET_NAME = st.secrets["SHEET_NAME"]
 
-
-@st.cache_data(ttl=300)
 def carregar_dados():
     creds = Credentials.from_service_account_info(
         st.secrets["gcp_service_account"],
@@ -82,32 +80,12 @@ df = preparar_dados(df_original)
 
 st.sidebar.header("Filtros")
 
-tipo_periodo = st.sidebar.radio(
-    "Filtrar por:",
-    ["Mês", "Período personalizado"],
-    horizontal=False
-)
+data_min = df["DATA"].min().date()
+data_max = df["DATA"].max().date()
 
-if tipo_periodo == "Mês":
-    meses_disponiveis = (
-        df[["MÊS_REF", "ANO_MES"]]
-        .drop_duplicates()
-        .sort_values("ANO_MES", ascending=False)
-    )
+usar_periodo = st.sidebar.checkbox("Filtrar por período", value=False)
 
-    opcoes_meses = meses_disponiveis["MÊS_REF"].tolist()
-
-    mes_selecionado = st.sidebar.selectbox(
-        "Mês",
-        opcoes_meses
-    )
-
-    df_filtrado = df[df["MÊS_REF"] == mes_selecionado]
-
-else:
-    data_min = df["DATA"].min().date()
-    data_max = df["DATA"].max().date()
-
+if usar_periodo:
     data_inicio = st.sidebar.date_input("Data inicial", data_min, format="DD/MM/YYYY")
     data_fim = st.sidebar.date_input("Data final", data_max, format="DD/MM/YYYY")
 
@@ -115,14 +93,25 @@ else:
         (df["DATA"].dt.date >= data_inicio) &
         (df["DATA"].dt.date <= data_fim)
     ]
+else:
+    df_filtrado = df.copy()
 
 centros = sorted(df_filtrado["CENTRO DE CUSTO"].dropna().unique().tolist())
 
-centros_selecionados = st.sidebar.multiselect(
-    "Centro de custo",
-    centros,
-    default=centros
-)
+centro_padrao = [
+    centro for centro in centros
+    if str(centro).strip().lower() == "necessidades básicas"
+]
+
+st.sidebar.markdown("### Centro de custo")
+
+centros_selecionados = []
+
+for centro in centros:
+    marcado = centro in centro_padrao
+
+    if st.sidebar.checkbox(centro, value=marcado, key=f"centro_{centro}"):
+        centros_selecionados.append(centro)
 
 df_filtrado = df_filtrado[
     df_filtrado["CENTRO DE CUSTO"].isin(centros_selecionados)
