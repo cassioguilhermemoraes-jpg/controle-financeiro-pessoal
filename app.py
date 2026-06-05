@@ -69,6 +69,28 @@ def preparar_dados(df):
 
 st.title("💰 Controle Financeiro Pessoal")
 
+meses_disponiveis = (
+    df[["MÊS_REF", "ANO_MES"]]
+    .drop_duplicates()
+    .sort_values("ANO_MES", ascending=False)
+)
+
+opcoes_meses = meses_disponiveis["MÊS_REF"].tolist()
+
+mes_atual = pd.Timestamp.today().strftime("%m/%Y")
+
+indice_mes_atual = (
+    opcoes_meses.index(mes_atual)
+    if mes_atual in opcoes_meses
+    else 0
+)
+
+mes_selecionado = st.selectbox(
+    "📅 Competência",
+    opcoes_meses,
+    index=indice_mes_atual
+)
+
 try:
     df_original = carregar_dados()
 except Exception as e:
@@ -94,19 +116,15 @@ st.sidebar.header("Filtros")
 
 tipo_periodo = st.sidebar.radio(
     "Período",
-    ["Todas as datas", "Mês", "Período personalizado"],
-    index=1
+    ["Mês", "Todas as datas", "Período personalizado"],
+    index=0
 )
 
 if tipo_periodo == "Todas as datas":
     df_filtrado = df.copy()
 
 elif tipo_periodo == "Mês":
-    meses_disponiveis = (
-        df[["MÊS_REF", "ANO_MES"]]
-        .drop_duplicates()
-        .sort_values("ANO_MES", ascending=False)
-    )
+    df_filtrado = df[df["MÊS_REF"] == mes_selecionado]
 
     opcoes_meses = meses_disponiveis["MÊS_REF"].tolist()
 
@@ -116,12 +134,6 @@ elif tipo_periodo == "Mês":
         opcoes_meses.index(mes_atual)
         if mes_atual in opcoes_meses
         else 0
-    )
-    
-    mes_selecionado = st.sidebar.selectbox(
-        "Selecione o mês",
-        opcoes_meses,
-        index=indice_mes_atual
     )
 
     df_filtrado = df[df["MÊS_REF"] == mes_selecionado]
