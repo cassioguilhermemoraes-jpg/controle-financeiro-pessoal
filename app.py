@@ -320,29 +320,11 @@ for _, row in df_filtrado.sort_values("DATA", ascending=False).head(100).iterrow
 
     st.markdown(
         f"""
-        <div style="
-            background:white;
-            border:1px solid #e5e7eb;
-            border-radius:14px;
-            padding:12px;
-            margin-bottom:10px;
-            box-shadow:0 2px 6px rgba(0,0,0,0.05);
-        ">
-            <div style="font-size:22px;font-weight:700;color:{cor}">
-                {emoji} {formatar_real(valor)}
-            </div>
-
-            <div style="font-weight:600;margin-top:6px;">
-                {row["FORNECEDOR"]}
-            </div>
-
-            <div style="color:#666;font-size:14px;">
-                {row["DESCRIÇÃO"]}
-            </div>
-
-            <div style="margin-top:6px;font-size:13px;color:#888;">
-                {row["DATA"].strftime("%d/%m/%Y")} • {row["CATEGORIA UNIFICADA"]}
-            </div>
+        <div style="background:white; border:1px solid #e5e7eb; border-radius:14px; padding:12px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
+            <div style="font-size:22px; font-weight:700; color:{cor};">{emoji} {formatar_real(valor)}</div>
+            <div style="font-weight:600; margin-top:6px;">{row["FORNECEDOR"]}</div>
+            <div style="color:#666; font-size:14px;">{row["DESCRIÇÃO"]}</div>
+            <div style="margin-top:6px; font-size:13px; color:#888;">{row["DATA"].strftime("%d/%m/%Y")} • {row["CATEGORIA UNIFICADA"]}</div>
         </div>
         """,
         unsafe_allow_html=True
