@@ -311,7 +311,40 @@ st.divider()
 
 st.subheader("📋 Lançamentos resumidos")
 
-for _, row in df_filtrado.sort_values("DATA", ascending=False).head(100).iterrows():
+st.markdown("#### Filtros dos lançamentos")
+
+col_f1, col_f2, col_f3 = st.columns(3)
+
+with col_f1:
+    filtro_centros_lanc = st.multiselect(
+        "Centro de custo",
+        sorted(df_filtrado["CENTRO DE CUSTO"].dropna().unique().tolist()),
+        default=sorted(df_filtrado["CENTRO DE CUSTO"].dropna().unique().tolist())
+    )
+
+with col_f2:
+    filtro_categorias_lanc = st.multiselect(
+        "Categoria",
+        sorted(df_filtrado["CATEGORIA UNIFICADA"].dropna().unique().tolist()),
+        default=sorted(df_filtrado["CATEGORIA UNIFICADA"].dropna().unique().tolist())
+    )
+
+with col_f3:
+    filtro_fornecedores_lanc = st.multiselect(
+        "Fornecedor",
+        sorted(df_filtrado["FORNECEDOR"].dropna().unique().tolist()),
+        default=sorted(df_filtrado["FORNECEDOR"].dropna().unique().tolist())
+    )
+
+df_lancamentos = df_filtrado[
+    (df_filtrado["CENTRO DE CUSTO"].isin(filtro_centros_lanc)) &
+    (df_filtrado["CATEGORIA UNIFICADA"].isin(filtro_categorias_lanc)) &
+    (df_filtrado["FORNECEDOR"].isin(filtro_fornecedores_lanc))
+].copy()
+
+st.caption(f"{len(df_lancamentos)} lançamentos encontrados")
+
+for _, row in df_lancamentos.sort_values("DATA", ascending=False).head(100).iterrows():
 
     valor = row["VALOR ENTRADA NUM"] if row["VALOR ENTRADA NUM"] > 0 else row["VALOR SAÍDA NUM"]
 
@@ -322,14 +355,15 @@ for _, row in df_filtrado.sort_values("DATA", ascending=False).head(100).iterrow
         f"""
         <div style="background:white; border:1px solid #e5e7eb; border-radius:14px; padding:12px; margin-bottom:10px; box-shadow:0 2px 6px rgba(0,0,0,0.05);">
             <div style="font-size:22px; font-weight:700; color:{cor};">{emoji} {formatar_real(valor)}</div>
-            <div style="font-weight:600; margin-top:6px;">{row["FORNECEDOR"]}</div>
-            <div style="color:#666; font-size:14px;">{row["DESCRIÇÃO"]}</div>
-            <div style="margin-top:6px; font-size:13px; color:#888;">{row["DATA"].strftime("%d/%m/%Y")} • {row["CATEGORIA UNIFICADA"]}</div>
+            <div style="font-weight:700; margin-top:8px;">{row["FORNECEDOR"]}</div>
+            <div style="color:#666; font-size:14px; margin-top:3px;">{row["DESCRIÇÃO"]}</div>
+            <div style="margin-top:8px; font-size:13px; color:#888;">{row["DATA"].strftime("%d/%m/%Y")} • {row["CATEGORIA UNIFICADA"]}</div>
+            <div style="margin-top:4px; font-size:12px; color:#999;">Centro de custo: {row["CENTRO DE CUSTO"]}</div>
         </div>
         """,
         unsafe_allow_html=True
     )
-
+    
 with st.expander("📊 Visualização completa (tabela)"):
 
     colunas_tabela = [
@@ -344,7 +378,7 @@ with st.expander("📊 Visualização completa (tabela)"):
         "ANEXO"
     ]
 
-    df_tabela = df_filtrado[colunas_tabela].copy()
+    df_tabela = df_lancamentos[colunas_tabela].copy()
     df_tabela["DATA"] = df_tabela["DATA"].dt.strftime("%d/%m/%Y")
     
     st.dataframe(
