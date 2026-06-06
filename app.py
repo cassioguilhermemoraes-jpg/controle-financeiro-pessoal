@@ -309,25 +309,64 @@ else:
 
 st.divider()
 
-st.subheader("Lançamentos")
+st.subheader("📋 Lançamentos resumidos")
 
-colunas_tabela = [
-    "DATA",
-    "FORNECEDOR",
-    "DESCRIÇÃO",
-    "CENTRO DE CUSTO",
-    "VALOR ENTRADA",
-    "VALOR SAÍDA",
-    "CATEGORIA UNIFICADA",
-    "TIPO DE LANÇAMENTO",
-    "ANEXO"
-]
+for _, row in df_filtrado.sort_values("DATA", ascending=False).head(100).iterrows():
 
-df_tabela = df_filtrado[colunas_tabela].copy()
-df_tabela["DATA"] = df_tabela["DATA"].dt.strftime("%d/%m/%Y")
+    valor = row["VALOR ENTRADA NUM"] if row["VALOR ENTRADA NUM"] > 0 else row["VALOR SAÍDA NUM"]
 
-st.dataframe(
-    df_tabela,
-    use_container_width=True,
-    hide_index=True
-)
+    cor = "#16a34a" if row["VALOR ENTRADA NUM"] > 0 else "#dc2626"
+    emoji = "🟩" if row["VALOR ENTRADA NUM"] > 0 else "🟥"
+
+    st.markdown(
+        f"""
+        <div style="
+            background:white;
+            border:1px solid #e5e7eb;
+            border-radius:14px;
+            padding:12px;
+            margin-bottom:10px;
+            box-shadow:0 2px 6px rgba(0,0,0,0.05);
+        ">
+            <div style="font-size:22px;font-weight:700;color:{cor}">
+                {emoji} {formatar_real(valor)}
+            </div>
+
+            <div style="font-weight:600;margin-top:6px;">
+                {row["FORNECEDOR"]}
+            </div>
+
+            <div style="color:#666;font-size:14px;">
+                {row["DESCRIÇÃO"]}
+            </div>
+
+            <div style="margin-top:6px;font-size:13px;color:#888;">
+                {row["DATA"].strftime("%d/%m/%Y")} • {row["CATEGORIA UNIFICADA"]}
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+with st.expander("📊 Visualização completa (tabela)"):
+
+    colunas_tabela = [
+        "DATA",
+        "FORNECEDOR",
+        "DESCRIÇÃO",
+        "CENTRO DE CUSTO",
+        "VALOR ENTRADA",
+        "VALOR SAÍDA",
+        "CATEGORIA UNIFICADA",
+        "TIPO DE LANÇAMENTO",
+        "ANEXO"
+    ]
+
+    df_tabela = df_filtrado[colunas_tabela].copy()
+    df_tabela["DATA"] = df_tabela["DATA"].dt.strftime("%d/%m/%Y")
+    
+    st.dataframe(
+        df_tabela,
+        use_container_width=True,
+        hide_index=True
+    )
